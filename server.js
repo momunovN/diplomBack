@@ -64,13 +64,17 @@ mongoose.connect(process.env.MONGO_URI, {
     // Не завершаем процесс, сервер продолжит работать без БД
   });
 
-// Обработка 404 для API (ИСПРАВЛЕННЫЙ СИНТАКСИС)
-app.all('/api/*', (req, res) => {
-  res.status(404).json({ 
-    error: 'API endpoint not found',
-    path: req.path,
-    method: req.method 
-  });
+// // Обработка 404 для API (ИСПРАВЛЕННЫЙ СИНТАКСИС)
+// Вместо '/api/*' используйте регулярное выражение
+app.all(/^\/api\//, (req, res, next) => {
+  // Если ни один из API роутов не совпал
+  if (!req.route) {
+    return res.status(404).json({ 
+      error: 'API endpoint not found',
+      path: req.path 
+    });
+  }
+  next();
 });
 
 // Root endpoint
