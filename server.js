@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const path = require('path');
 
 dotenv.config();
 
@@ -13,12 +12,12 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://film-live.vercel.app',
-  'https://ваш-фронтенд.vercel.app' // замените на ваш домен
+  'https://newkino-frontend.vercel.app' // или ваш фронтенд домен
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Разрешить запросы без origin (например, от мобильных приложений или curl)
+    // Разрешить запросы без origin
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
@@ -48,11 +47,12 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     timestamp: new Date().toISOString(),
     service: 'NEWKINO API',
-    version: '1.0.0'
+    version: '1.0.0',
+    nodeVersion: process.version
   });
 });
 
-// MongoDB подключение с улучшенной обработкой ошибок
+// MongoDB подключение
 mongoose.connect(process.env.MONGO_URI, {
   maxPoolSize: 10,
   serverSelectionTimeoutMS: 5000,
@@ -61,12 +61,29 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log('✅ MongoDB подключён успешно'))
   .catch(err => {
     console.error('❌ Ошибка MongoDB:', err);
-    process.exit(1); // Завершаем процесс при ошибке подключения
+    // Не завершаем процесс, сервер продолжит работать без БД
   });
 
-// Обработка 404
-app.use('/api/*', (req, res) => {
-  res.status(404).json({ error: 'API endpoint not found' });
+// Обработка 404 для API (ИСПРАВЛЕННЫЙ СИНТАКСИС)
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ 
+    error: 'API endpoint not found',
+    path: req.path,
+    method: req.method 
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'NEWKINO API Server',
+    endpoints: {
+      auth: '/api/auth',
+      bookings: '/api/bookings',
+      health: '/api/health'
+    },
+    docs: 'See documentation for more information'
+  });
 });
 
 // Обработка ошибок
@@ -75,7 +92,8 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({
     error: process.env.NODE_ENV === 'production' 
       ? 'Internal server error' 
-      : err.message
+      : err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
@@ -86,4 +104,5 @@ app.listen(PORT, () => {
   console.log(`🌐 Режим: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 MongoDB: ${process.env.MONGO_URI ? 'подключен' : 'не настроен'}`);
   console.log(`🎯 Яндекс OAuth: ${process.env.YANDEX_CLIENT_ID ? 'настроен' : 'не настроен'}`);
+  console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
 });
