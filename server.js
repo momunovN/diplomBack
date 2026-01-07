@@ -11,8 +11,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  'https://film-live.vercel.app',
-  'https://newkino-frontend.vercel.app' // или ваш фронтенд домен
+  'https://film-live.vercel.app',// или ваш фронтенд домен
 ];
 
 app.use(cors({
