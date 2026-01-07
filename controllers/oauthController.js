@@ -6,7 +6,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const YANDEX_CLIENT_ID = process.env.YANDEX_CLIENT_ID;
 const YANDEX_CLIENT_SECRET = process.env.YANDEX_CLIENT_SECRET;
 const YANDEX_CALLBACK_URL = process.env.YANDEX_CALLBACK_URL;
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://film-live.vercel.app';
 
 // Получение URL для авторизации через Яндекс
 exports.getYandexAuthUrl = (req, res) => {
